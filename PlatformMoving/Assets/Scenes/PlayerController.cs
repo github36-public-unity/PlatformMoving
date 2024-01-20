@@ -20,20 +20,25 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         float horizontalInput = Input.GetAxis("Horizontal");
-        Vector2 movement = new Vector2(horizontalInput * moveSpeed, rb.velocity.y);
-        rb.velocity = movement;
+        //Vector2 movement = new Vector2(horizontalInput * moveSpeed, rb.velocity.y);
+        //rb.velocity = movement;
 
 
 
-        // Прыжок
+        //// Прыжок
+        //if (Input.GetKey(KeyCode.Space))
+
+        //{
+        //    rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+        //}
+
+        rb.AddForce(new Vector2(horizontalInput * moveSpeed * Time.fixedDeltaTime, 0), ForceMode2D.Impulse);
+
         if (Input.GetKey(KeyCode.Space))
-
         {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            //rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            rb.AddForce(new Vector2(0, jumpForce * Time.fixedDeltaTime), ForceMode2D.Impulse);
         }
-
-    
-
 
     }
 }

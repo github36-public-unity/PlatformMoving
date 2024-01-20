@@ -20,7 +20,7 @@ public class PlatformController : MonoBehaviour
     void OnEnable()
     {
 
-        rb = GetComponent<Rigidbody2D>();
+        //rb = GetComponent<Rigidbody2D>();
         if (pointToMove1 == null || pointToMove2 == null)
         {
             Debug.LogError("Сообщение из скрипта EndlessMoveFromPointToPoint у объекта " + gameObject.name + ". Ошибка. Не указана точка для перемещения.");
@@ -32,6 +32,7 @@ public class PlatformController : MonoBehaviour
         // Начинаем бесконечное перемещение
         StartMoving();
     }
+
 
     void StartMoving()
     {
@@ -51,17 +52,14 @@ public class PlatformController : MonoBehaviour
 
         while (elapsedTime < timeToMove)
         {
-
             if (moveDirectionflag == true)
             {
-
-                rb.MovePosition(Vector2.Lerp(Position1, Position2, elapsedTime / timeToMove));
-
-
+                transform.Translate((Vector2.Lerp(Position1, Position2, elapsedTime / timeToMove) - new Vector2(transform.position.x, transform.position.y)) * Time.deltaTime, Space.World);
             }
-            if (moveDirectionflag == false) rb.MovePosition(Vector2.Lerp(Position2, Position1, elapsedTime / timeToMove));
-
-
+            else
+            {
+                transform.Translate((Vector2.Lerp(Position2, Position1, elapsedTime / timeToMove) - new Vector2(transform.position.x, transform.position.y)) * Time.deltaTime, Space.World);
+            } 
 
             elapsedTime += Time.deltaTime;
             yield return null;
@@ -78,7 +76,26 @@ public class PlatformController : MonoBehaviour
 
 
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    //private void OnCollisionEnter2D(Collision2D collision)
+    //{
+    //    if (collision.gameObject.CompareTag("Player"))
+    //    {
+    //        Debug.Log("OnCollisionEnter2D");
+    //        player = collision.gameObject;
+    //        player.transform.parent = transform;
+    //    }
+    //}
+
+    //private void OnCollisionExit2D(Collision2D collision)
+    //{
+    //    if (collision.gameObject.CompareTag("Player"))
+    //    {
+    //        player.transform.parent = null;
+    //        player = null;
+    //    }
+    //}
+
+    private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Player"))
         {
@@ -88,7 +105,7 @@ public class PlatformController : MonoBehaviour
         }
     }
 
-    private void OnCollisionExit2D(Collision2D collision)
+    private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Player"))
         {
@@ -96,10 +113,6 @@ public class PlatformController : MonoBehaviour
             player = null;
         }
     }
-
-
-
-
 
 
 
