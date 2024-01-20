@@ -1,119 +1,93 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlatformController : MonoBehaviour
 {
-
-    [SerializeField] private Transform pointToMove1;
-    [SerializeField] private Transform pointToMove2;
-    [SerializeField] private float timeToMove;
-
-    private Vector2 Position1;
-    private Vector2 Position2;
-    private Rigidbody2D rb;
-    private Coroutine moveCoroutine;
-    private bool moveDirectionflag = true;
-    GameObject player;
+    [SerializeField] private Transform positionA, positionB;
+    private Vector3 targetPosition;
+    [SerializeField] private float platformSpeed;
+    private Vector2 platformMoveDirection;
 
 
-    void OnEnable()
+    private Rigidbody2D playerRigidbody2D, platformRigidbody2D;
+
+
+    private GameObject player;
+    private PlayerController playerController;
+
+
+
+
+
+    private void Awake()
     {
-
-        //rb = GetComponent<Rigidbody2D>();
-        if (pointToMove1 == null || pointToMove2 == null)
-        {
-            Debug.LogError("Сообщение из скрипта EndlessMoveFromPointToPoint у объекта " + gameObject.name + ". Ошибка. Не указана точка для перемещения.");
-        }
-
-        Position1 = pointToMove1.position;
-        Position2 = pointToMove2.position;
-
-        // Начинаем бесконечное перемещение
-        StartMoving();
+        platformRigidbody2D = GetComponent<Rigidbody2D>();
+        player = GameObject.Find("Player");
+        playerController = player.GetComponent<PlayerController>();
+        playerRigidbody2D = player.GetComponent<Rigidbody2D>();
     }
 
 
-    void StartMoving()
+    private void Start()
     {
-        if (moveCoroutine != null)
-        {
-            StopCoroutine(moveCoroutine);
-        }
-
-        moveCoroutine = StartCoroutine(MoveBetweenPoints(Position1, Position2, timeToMove));
+        targetPosition = positionB.position;
+        DirectionCalculate();
     }
 
-
-
-    IEnumerator MoveBetweenPoints(Vector2 Position1, Vector2 Position2, float timeToMove)
+    private void FixedUpdate()
     {
-        float elapsedTime = 0f;
+        platformRigidbody2D.velocity = platformMoveDirection * platformSpeed;
 
-        while (elapsedTime < timeToMove)
+        if (Vector2.Distance(transform.position, positionA.position) < 0.05f)
         {
-            if (moveDirectionflag == true)
-            {
-                transform.Translate((Vector2.Lerp(Position1, Position2, elapsedTime / timeToMove) - new Vector2(transform.position.x, transform.position.y)) * Time.deltaTime, Space.World);
-            }
-            else
-            {
-                transform.Translate((Vector2.Lerp(Position2, Position1, elapsedTime / timeToMove) - new Vector2(transform.position.x, transform.position.y)) * Time.deltaTime, Space.World);
-            } 
-
-            elapsedTime += Time.deltaTime;
-            yield return null;
+            targetPosition = positionB.position;
+            DirectionCalculate();
         }
 
-        moveDirectionflag = !moveDirectionflag;
+       else if (Vector2.Distance(transform.position, positionB.position) < 0.05f)
+        {
+            targetPosition = positionA.position;
+            DirectionCalculate();
+        }
+    }
 
-        // Даем немного времени перед следующим циклом
-        yield return new WaitForSeconds(0.5f);
-
-        // Начинаем следующий цикл бесконечного перемещения
-        StartMoving();
+    private void DirectionCalculate()
+    {
+        platformMoveDirection = (targetPosition - transform.position).normalized;
     }
 
 
 
-    //private void OnCollisionEnter2D(Collision2D collision)
-    //{
-    //    if (collision.gameObject.CompareTag("Player"))
-    //    {
-    //        Debug.Log("OnCollisionEnter2D");
-    //        player = collision.gameObject;
-    //        player.transform.parent = transform;
-    //    }
-    //}
 
-    //private void OnCollisionExit2D(Collision2D collision)
-    //{
-    //    if (collision.gameObject.CompareTag("Player"))
-    //    {
-    //        player.transform.parent = null;
-    //        player = null;
-    //    }
-    //}
-
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            Debug.Log("OnCollisionEnter2D");
-            player = collision.gameObject;
-            player.transform.parent = transform;
+            // player.transform.parent = transform; 
+         //  player.transform.SetParent(transform);
+             playerController.PlayerIsOnHorizontalPlatform = true;
+            playerController.PlatformRigidbody2D = platformRigidbody2D;
+           // playerRigidbody2D.gravityScale *= 50;
         }
     }
 
-    private void OnTriggerExit2D(Collider2D collision)
+    private void OnCollisionExit2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            player.transform.parent = null;
-            player = null;
+            // player.transform.parent = null;
+          // player.transform.SetParent(null);
+            playerController.PlayerIsOnHorizontalPlatform = false;
+           // playerRigidbody2D.gravityScale /= 50;
         }
     }
 
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(positionA.position, positionB.position);
+    }
 
 
 }
